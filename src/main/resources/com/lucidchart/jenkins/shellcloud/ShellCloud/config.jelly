@@ -1,0 +1,17 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:f="/lib/form" xmlns:j="jelly:core">
+  <f:section title="${%Shell Cloud}">
+    <f:entry title="${%Name}" field="name">
+      <f:textbox/>
+    </f:entry>
+    <f:entry title="${%Labels}" field="labelString">
+      <f:textbox field="labelString"/>
+    </f:entry>
+    <f:entry title="${%Max total executors}" field="executorLimit">
+      <f:number/>
+    </f:entry>
+    <f:entry title="${%Command}" field="command">
+      <f:textarea field="command"/>
+    </f:entry>
+  </f:section>
+</j:jelly>
