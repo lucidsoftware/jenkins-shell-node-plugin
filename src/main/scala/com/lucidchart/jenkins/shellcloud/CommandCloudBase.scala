@@ -10,6 +10,7 @@ import java.util.concurrent.CompletableFuture
 import jenkins.model.Jenkins
 import org.kohsuke.stapler.HttpResponses
 import resource.{managed, ManagedResource}
+import scala.annotation.tailrec
 import scala.beans.BeanProperty
 import scala.collection.JavaConverters._
 import scala.concurrent.duration.Duration
@@ -19,7 +20,6 @@ case class ProvisionParams(label: Label, workload: Int)
 
 abstract class CommandCloudBase(
   name: String,
-  @BeanProperty val executorLimit: Int,
   @BeanProperty val labelString: String
 ) extends Cloud(name)
     with JavaLogging {
@@ -44,14 +44,15 @@ abstract class CommandCloudBase(
   def canProvision(label: Label) = labels.contains(label.getName)
 
   def provision(label: Label, workload: Int) = {
-    def next(workload: Int): List[PlannedNode] =
+    @tailrec
+    def next(nodes: List[PlannedNode], workload: Int): List[PlannedNode] =
       if (workload <= 0) {
-        Nil
+        nodes
       } else {
         val node = planned(ProvisionParams(label, workload))
-        node +: next(workload - node.numExecutors)
+        next(node :: nodes, workload - node.numExecutors)
       }
-    asJavaCollection(next(workload))
+    asJavaCollection(next(Nil, workload))
   }
 
   private[this] def planned(params: ProvisionParams) = {
@@ -70,7 +71,7 @@ abstract class CommandCloudBase(
         val future = new CompletableFuture[Node]
         logger.info(s"Planned node $name for ${params.label}")
         promise.success(new PlannedNode(name, future, capacity) { override def spent() = process.destroy() })
-        FutureUtil.completeWith(future, CommandCloudBase.XStream.fromXML(reader).asInstanceOf[Node])
+        FutureUtil.completeWith(future)(CommandCloudBase.XStream.fromXML(reader).asInstanceOf[Node])
         logger.info(s"Provisioned ${future.get.getNodeName} for ${params.label}")
       }
     })

@@ -11,9 +11,8 @@ import scala.collection.JavaConverters._
 class ShellCloudBase(
   @BeanProperty val command: String,
   name: String,
-  executorLimit: Int,
   labelString: String
-) extends CommandCloudBase(name, executorLimit, labelString) {
+) extends CommandCloudBase(name, labelString) {
   def run(params: Option[ProvisionParams]) =
     for {
       file <- FileUtil.managedFile(

@@ -11,7 +11,7 @@ object FutureUtil {
     def close(promise: Promise[A]) = ()
   }
 
-  def completeWith[A](future: CompletableFuture[A], value: => A): Unit =
+  def completeWith[A](future: CompletableFuture[A])(value: => A): Unit =
     try future.complete(value)
     catch {
       case e: Throwable =>

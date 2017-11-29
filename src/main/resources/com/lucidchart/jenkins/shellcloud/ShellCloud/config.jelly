@@ -7,9 +7,6 @@
     <f:entry title="${%Labels}" field="labelString">
       <f:textbox field="labelString"/>
     </f:entry>
-    <f:entry title="${%Max total executors}" field="executorLimit">
-      <f:number/>
-    </f:entry>
     <f:entry title="${%Command}" field="command">
       <f:textarea field="command"/>
     </f:entry>
