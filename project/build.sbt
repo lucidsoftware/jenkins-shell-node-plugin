@@ -1,3 +1,5 @@
+addSbtPlugin("com.lightbend.sbt" % "sbt-proguard" % "0.3.0")
+
 addSbtPlugin("com.lucidchart" % "sbt-scalafmt" % "1.14")
 
 libraryDependencies ++= Seq(

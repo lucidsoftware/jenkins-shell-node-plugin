@@ -15,6 +15,8 @@ val jenkinsVersion = settingKey[String]("Jenkins version")
 
 val serverUrl = TaskKey[URI]("server-url")
 
+enablePlugins(SbtProguard)
+
 inConfig(Hpi)(
   Defaults.packageTaskSettings(packageBin, mappings in packageBin) ++
   inTask(packageBin)(Seq(
@@ -72,9 +74,9 @@ install in Hpi := {
       }
     })
     .setServiceUnavailableRetryStrategy(new DefaultServiceUnavailableRetryStrategy(20, 1500))
+  Thread.sleep(3000)
+  log.info("Waiting for Jenkins to be ready")
   for (client <- managed(retryClientBuilder.build)) {
-    log.info("Waiting for Jenkins to be ready")
-    Thread.sleep(3000)
     val request = new HttpHead(baseUrl)
     val status = managed(client.execute(request)).acquireAndGet(_.getStatusLine.getStatusCode)
     assert(200 <= status && status < 400)
@@ -88,14 +90,22 @@ jenkinsVersion := "1.651.2"
 libraryDependencies ++= Seq(
   "com.jsuereth" %% "scala-arm" % "2.0",
   "javax.servlet" % "javax.servlet-api" % "3.1.0" % Provided,
+  "javax.transaction" % "transaction-api" % "1.1" % Provided,
   "org.jenkins-ci.main" % "jenkins-core" % jenkinsVersion.value % Provided
 )
 
-mappings in (Hpi, packageBin) :=
-  (fullClasspathAsJars in Runtime).value.map { file =>
+logLevel in (Proguard, proguard) := Level.Debug
+
+if (sys.props.contains("proguard")) {
+  mappings in (Hpi, packageBin) := (proguard in Proguard).value.map { file =>
+    file -> s"WEB-INF/lib/${file.name}"
+  }
+} else {
+  mappings in (Hpi, packageBin) := (fullClasspathAsJars in Runtime).value.map { file =>
     val artifact = file.get(Keys.artifact.key).get
     file.data -> s"WEB-INF/lib/${artifact.name}.${artifact.extension}"
   }
+}
 
 name := "jenkins-shell-cloud-plugin"
 
@@ -104,6 +114,21 @@ name in Hpi := "shell-cloud"
 organization := "com.lucidchart"
 
 organizationName := "Lucid Software"
+
+inConfig(Proguard)(Seq(
+  javaOptions in proguard := Seq("-Xmx512m", "-Xss100m"),
+  proguardBinaryDeps ++= update.value.select(moduleFilter("javax.transaction", "transaction-api")),
+  proguardOptions :=
+    ProguardOptions.jarOptions("-libraryjars", proguardFilteredLibraries.value) ++
+    proguardFilteredInputs.value.zip(proguardFilteredOutputs.value).flatMap { case (input, output) =>
+      ProguardOptions.jarOptions("-injars", Seq(input)) ++ ProguardOptions.jarOptions("-outjars", Seq(output))
+    },
+  proguardOptions ++= IO.readLines(baseDirectory.value / "config.pro"),
+  proguardOutputs := proguardFilteredInputs.value.map { input =>
+    val outputName = if (input.file == (classDirectory in Compile).value) s"${artifact.value.name}.${artifact.value.extension}" else input.file.name
+    proguardDirectory.value / outputName
+  }
+))
 
 homepage := Some(url("https://github.com/lucidsoftware/jenkins-shell-cloud-plugin"))
 
