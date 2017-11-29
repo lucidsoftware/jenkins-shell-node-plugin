@@ -6,7 +6,7 @@ public class ShellNode {
     private ShellNode() {
     }
 
-    @Extension
+    //@Extension
     public static class ShellNodeDescriptor extends ShellNodeBase.Descriptor {
     }
 }

@@ -13,6 +13,12 @@ class ShellCloudBase(
   name: String,
   labelString: String
 ) extends CommandCloudBase(name, labelString) {
+  def getClouds =
+    Jenkins.getInstance.clouds.asScala
+      .collect { case cloud: ShellCloudBase => cloud }
+      .sortBy(_.name)
+      .asJava
+
   def run(params: Option[ProvisionParams]) =
     for {
       file <- FileUtil.managedFile(

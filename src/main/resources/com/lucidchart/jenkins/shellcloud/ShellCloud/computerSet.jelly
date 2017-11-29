@@ -1,0 +1,27 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:f="/lib/form" xmlns:j="jelly:core" xmlns:st="jelly:stapler">
+  <st:once>
+    <j:if test="${it.hasPermission(it.PROVISION)}">
+      <tr>
+        <td/>
+        <td colspan="${monitors.size()+1}">
+          <f:form action="${rootURL}/cloud/${it.name}/provision" method="post" name="provision-shell">
+            <input class="shell-provision-button" type="submit" value="${%Provision via shell cloud}" />
+            <select name="cloud">
+              <j:forEach var="cloud" items="${it.clouds}">
+                <option value="${cloud.name}">${cloud.displayName}</option>
+              </j:forEach>
+            </select>
+          </f:form>
+        </td>
+      </tr>
+      <script>
+        Behaviour.register({
+          '.shell-provision-button': function(e) {
+            new YAHOO.widget.Button(e, {type: 'menu', menu: e.nextSibling});
+          }
+        });
+      </script>
+    </j:if>
+  </st:once>
+</j:jelly>
