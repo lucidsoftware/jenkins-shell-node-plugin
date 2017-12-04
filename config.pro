@@ -1,6 +1,6 @@
 -allowaccessmodification
 -dontoptimize # otherwise Jenkins has class loading error
--keep public class com.lucidchart.jenkins.shellcloud.** {
+-keep public class com.lucidchart.jenkins.shellnode.** {
   public *;
 }
 #-keep public class * extends hudson.model.Descriptor {

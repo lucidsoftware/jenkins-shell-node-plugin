@@ -1,4 +1,4 @@
-package com.lucidchart.jenkins.shellcloud
+package com.lucidchart.jenkins.shellnode
 
 import java.util.logging.Logger
 

@@ -1,6 +1,6 @@
-package com.lucidchart.jenkins.shellcloud
+package com.lucidchart.jenkins.shellnode
 
-import com.lucidchart.jenkins.shellcloud.FutureUtil.promiseResource
+import com.lucidchart.jenkins.shellnode.FutureUtil.promiseResource
 import hudson.model.{Label, Node}
 import hudson.slaves.Cloud
 import hudson.slaves.NodeProvisioner.PlannedNode

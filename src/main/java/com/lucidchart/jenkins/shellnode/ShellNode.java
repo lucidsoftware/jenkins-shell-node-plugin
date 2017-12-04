@@ -1,6 +1,4 @@
-package com.lucidchart.jenkins.shellcloud;
-
-import hudson.Extension;
+package com.lucidchart.jenkins.shellnode;
 
 public class ShellNode {
     private ShellNode() {

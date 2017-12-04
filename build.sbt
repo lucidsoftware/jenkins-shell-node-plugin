@@ -107,9 +107,9 @@ if (sys.props.contains("proguard")) {
   }
 }
 
-name := "jenkins-shell-cloud-plugin"
+name := "jenkins-shell-node-plugin"
 
-name in Hpi := "shell-cloud"
+name in Hpi := "shell-node"
 
 organization := "com.lucidchart"
 
@@ -130,7 +130,7 @@ inConfig(Proguard)(Seq(
   }
 ))
 
-homepage := Some(url("https://github.com/lucidsoftware/jenkins-shell-cloud-plugin"))
+homepage := Some(url("https://github.com/lucidsoftware/jenkins-shell-node-plugin"))
 
 resolvers += "Jenkins public repository" at "https://repo.jenkins-ci.org/public/"
 

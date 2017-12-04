@@ -1,4 +1,4 @@
-package com.lucidchart.jenkins.shellcloud
+package com.lucidchart.jenkins.shellnode
 
 import hudson.model.{Descriptor => HudsonDescriptor}
 import hudson.slaves.Cloud
