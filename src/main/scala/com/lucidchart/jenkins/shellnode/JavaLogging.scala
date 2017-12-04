@@ -4,5 +4,5 @@ import java.util.logging.Logger
 
 trait JavaLogging {
   @transient
-  protected[this] val logger = Logger.getLogger(getClass.getName)
+  protected[this] lazy val logger = Logger.getLogger(getClass.getName)
 }

@@ -9,7 +9,7 @@ import scala.util.control.NonFatal
 abstract class CommandRetentionStrategyBase extends RetentionStrategy[SlaveComputer] with JavaLogging {
   def check(computer: SlaveComputer) =
     try {
-      //logger.info(s"Checking retention for ${computer.getName}")
+      logger.info(s"Checking retention for ${computer.getName}")
       val reader = for {
         process <- run(computer)
         input <- managed(process.getInputStream)
