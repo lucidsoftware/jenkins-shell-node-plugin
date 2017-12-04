@@ -1,11 +1,11 @@
 package com.lucidchart.jenkins.shellnode
 
-import hudson.model.{ManagementLink, Node, RootAction}
+import hudson.model.{ManagementLink, Node}
 import hudson.util.XStream2
 import jenkins.model.Jenkins
 import org.kohsuke.stapler.{HttpResponse, HttpResponses}
 
-class CustomNodeBase extends ManagementLink with RootAction {
+class CustomNodeBase extends ManagementLink {
   override def getDescription = "Create a new node from XML"
 
   def getDisplayName = "Create custom node"
