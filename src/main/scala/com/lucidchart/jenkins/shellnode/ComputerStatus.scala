@@ -1,23 +1,27 @@
 package com.lucidchart.jenkins.shellnode
 
 import hudson.slaves.{OfflineCause, SlaveComputer}
+import jenkins.model.Jenkins
 import jenkins.util.NonLocalizable
 
 sealed trait ComputerStatus
 
 object ComputerStatus {
+  object Deleted extends ComputerStatus
   object Disabled extends ComputerStatus
   object Enabled extends ComputerStatus
   case class Offline(cause: String) extends ComputerStatus
 
   def parse(value: String) = value.split("\\s+", 2).toList match {
+    case "DELETED" :: _          => Deleted
     case "DISABLED" :: _         => Disabled
     case "ENABLED" :: _          => Enabled
-    case "OFFLINE" :: _          => Offline("")
     case "OFFLINE" :: value :: _ => Offline(value)
+    case "OFFLINE" :: _          => Offline("")
   }
 
   def serialize(status: ComputerStatus) = status match {
+    case Deleted        => "DELETED"
     case Disabled       => "DISABLED"
     case Enabled        => "ENABLED"
     case Offline(value) => s"OFFLINE\t$value"
@@ -33,6 +37,8 @@ object ComputerStatus {
     }
 
   def set(computer: SlaveComputer, status: ComputerStatus) = status match {
+    case Deleted =>
+      Jenkins.getInstance.removeNode(computer.getNode)
     case Disabled =>
       computer.connect(false)
       computer.setAcceptingTasks(false)
