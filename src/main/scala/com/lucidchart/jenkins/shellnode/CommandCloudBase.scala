@@ -32,7 +32,7 @@ abstract class CommandCloudBase(
     } yield {
       val reader = new BufferedReader(new InputStreamReader(input))
       reader.readLine()
-      CommandCloudBase.XStream.fromXML(reader)
+      CustomNodeBase.XStream.fromXML(reader)
     }
     val node = nodeResource.acquireAndGet(_.asInstanceOf[Node])
     Jenkins.getInstance.addNode(node)
@@ -71,7 +71,7 @@ abstract class CommandCloudBase(
         val future = new CompletableFuture[Node]
         logger.info(s"Planned node $name for ${params.label}")
         promise.success(new PlannedNode(name, future, capacity) { override def spent() = process.destroy() })
-        FutureUtil.completeWith(future)(CommandCloudBase.XStream.fromXML(reader).asInstanceOf[Node])
+        FutureUtil.completeWith(future)(CustomNodeBase.XStream.fromXML(reader).asInstanceOf[Node])
         logger.info(s"Provisioned ${future.get.getNodeName} for ${params.label}")
       }
     })
@@ -79,8 +79,4 @@ abstract class CommandCloudBase(
   }
 
   def run(params: Option[ProvisionParams]): ManagedResource[Process]
-}
-
-object CommandCloudBase {
-  private val XStream = new XStream2
 }

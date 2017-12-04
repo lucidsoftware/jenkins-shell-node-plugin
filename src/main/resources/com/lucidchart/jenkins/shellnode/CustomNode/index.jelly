@@ -1,0 +1,18 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:f="/lib/form" xmlns:j="jelly:core" xmlns:l="/lib/layout" xmlns:t="/lib/hudson">
+  <l:layout permission="${app.ADMINISTER}" title="Create Custom Node" norefresh="true">
+    <l:header/>
+    <l:side-panel>
+      <l:tasks>
+        <l:task icon="images/48x48/setting.gif" href="${rootURL}/manage" title="${%Manage Jenkins}" />
+      </l:tasks>
+      <t:executors computers="${h.singletonList(it)}" />
+    </l:side-panel>
+    <l:main-panel>
+      <f:form action="createNode" method="post" name="create-node">
+        <f:textarea name="config"/>
+        <f:submit value="Create Node"/>
+      </f:form>
+    </l:main-panel>
+  </l:layout>
+</j:jelly>
