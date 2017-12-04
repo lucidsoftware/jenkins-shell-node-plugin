@@ -1,0 +1,19 @@
+<div>
+    The shell script to run. It will have the following environment variables.
+    <ul>
+        <li>JENKINS_URL &#8211; Root URL of this Jenkins instance</li>
+        <li>NODE_IDLE &#8211; "true" if the node is idle; "false" otherwise</li>
+        <li>NODE_IDLE_START &#8211; Milliseconds since node became idle; negative for Jenkins estimate of when it will become idle</li>
+        <li>NODE_NAME &#8211; name of the node</li>
+        <li>NODE_STATUS &#8211; current status of the node</li>
+    </ul>
+    The first line of the script's output is the milliseconds until Jenkins should check again.
+    The second line, if present, is the status to change the node to.
+    <br/>
+    Statuses are:
+    <ul>
+        <li>ENABLED &#8211; Online and accepting new jobs</li>
+        <li>DISABLED &#8211; Online and not accepting new jobs</li>
+        <li>OFFLINE &#8211; Offline. Following "OFFLINE", there is a tab character and a reason.</li>
+    </ul>
+</div>
