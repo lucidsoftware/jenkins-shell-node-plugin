@@ -17,6 +17,5 @@
 #}
 -keep,allowoptimization,allowshrinking class * { *; }
 -keepattributes *
--optimizationpasses 1
--target 8
+-optimizationpasses 2
 -verbose
