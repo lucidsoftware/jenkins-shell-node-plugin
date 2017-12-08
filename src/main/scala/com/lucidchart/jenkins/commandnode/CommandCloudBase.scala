@@ -1,5 +1,6 @@
 package com.lucidchart.jenkins.commandnode
 
+import hudson.model.labels.LabelAtom
 import hudson.model.{Label, Node, Descriptor => HudsonDescriptor}
 import hudson.slaves.Cloud
 import hudson.slaves.NodeProvisioner.PlannedNode
@@ -39,9 +40,9 @@ class ShellCloudBase(
     HttpResponses.redirectViaContextPath(s"/computer/${node.getNodeName}")
   }
 
-  private[this] def labels = labelString.split("\\s+")
+  private[this] def labels = labelString.split("\\s+").map(new LabelAtom(_)).toSeq
 
-  def canProvision(label: Label) = labels.contains(label.getName)
+  def canProvision(label: Label) = label.matches(labels.asJavaCollection)
 
   def provision(label: Label, workload: Int) = {
     println("provision(" + label.getName + ", " + workload + ")")
