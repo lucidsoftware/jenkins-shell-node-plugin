@@ -19,6 +19,7 @@ class ShellCloudBase(
 
   def run(params: Option[ProvisionParams]) = ProcessUtil.runShellScript(command) { builder =>
     builder.environment.put("JENKINS_URL", Jenkins.getInstance.getRootUrl)
+    builder.environment.put("CLOUD_NAME", name)
     params.foreach {
       case ProvisionParams(label, workload) =>
         builder.environment.put("NODE_CAPACITY", workload.toString)
