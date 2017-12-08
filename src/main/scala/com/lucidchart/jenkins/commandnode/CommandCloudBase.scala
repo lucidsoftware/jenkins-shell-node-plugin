@@ -103,7 +103,7 @@ class ShellCloudBase(
   private[this] def run(params: Option[ProvisionParams]) = ProcessUtil.runShellScript(command) { builder =>
     builder.redirectError(ProcessBuilder.Redirect.INHERIT)
     builder.environment.put("JENKINS_URL", Jenkins.getInstance.getRootUrl)
-    builder.environment.put("CLOUD_NAME", name)
+    builder.environment.put("CLOUD_NAME", getDisplayName)
     params.foreach {
       case ProvisionParams(label, workload) =>
         builder.environment.put("NODE_CAPACITY", workload.toString)
