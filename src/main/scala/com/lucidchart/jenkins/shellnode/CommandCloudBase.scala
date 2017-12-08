@@ -49,14 +49,16 @@ abstract class CommandCloudBase(
       if (workload <= 0) {
         nodes
       } else {
-        val node = planned(ProvisionParams(label, workload))
-        next(node :: nodes, workload - node.numExecutors)
+        planned(ProvisionParams(label, workload)) match {
+          case Some(node) => next(node :: nodes, workload - node.numExecutors)
+          case None => nodes
+        }
       }
     asJavaCollection(next(Nil, workload))
   }
 
   private[this] def planned(params: ProvisionParams) = {
-    val promise = Promise[PlannedNode]()
+    val promise = Promise[Option[PlannedNode]]()
     val thread = new Thread(
       () =>
         try {
@@ -68,12 +70,20 @@ abstract class CommandCloudBase(
             logger.info(s"Provisioning node for ${params.label}")
             val reader = new BufferedReader(new InputStreamReader(input))
             val line = reader.readLine()
-            val (name, capacity) = line.split(" ") match { case Array(name, capacity) => name -> capacity.toInt }
-            val future = new CompletableFuture[Node]
-            logger.info(s"Planned node $name for ${params.label}")
-            promise.success(new PlannedNode(name, future, capacity) { override def spent() = process.destroy() })
-            FutureUtil.completeWith(future)(CustomNodeBase.XStream.fromXML(reader).asInstanceOf[Node])
-            logger.info(s"Provisioned ${future.get.getNodeName} for ${params.label}")
+            if (line == "0") {
+              promise.success(None)
+            } else {
+              val (name, capacity) = line.split(" ") match {
+                case Array(name, capacity) => name -> capacity.toInt
+              }
+              val future = new CompletableFuture[Node]
+              logger.info(s"Planned node $name for ${params.label}")
+              promise.success(Some(new PlannedNode(name, future, capacity) {
+                override def spent() = process.destroy()
+              }))
+              FutureUtil.completeWith(future)(CustomNodeBase.XStream.fromXML(reader).asInstanceOf[Node])
+              logger.info(s"Provisioned ${future.get.getNodeName} for ${params.label}")
+            }
           }
         } catch {
           case NonFatal(e) => promise.tryFailure(e)
