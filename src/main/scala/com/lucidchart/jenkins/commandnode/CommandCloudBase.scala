@@ -1,4 +1,4 @@
-package com.lucidchart.jenkins.shellnode
+package com.lucidchart.jenkins.commandnode
 
 import hudson.model.{Label, Node, Descriptor => HudsonDescriptor}
 import hudson.slaves.Cloud
@@ -113,6 +113,6 @@ class ShellCloudBase(
 
 object ShellCloudBase {
   class Descriptor extends HudsonDescriptor[Cloud] {
-    override def getDisplayName = "Shell"
+    override def getDisplayName = "Command Cloud"
   }
 }

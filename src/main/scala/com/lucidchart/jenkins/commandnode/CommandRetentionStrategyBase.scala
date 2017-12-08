@@ -1,4 +1,4 @@
-package com.lucidchart.jenkins.shellnode
+package com.lucidchart.jenkins.commandnode
 
 import hudson.model.{Descriptor => HudsonDescriptor}
 import hudson.slaves.{RetentionStrategy, SlaveComputer}
@@ -9,7 +9,7 @@ import resource.managed
 import scala.beans.BeanProperty
 import scala.util.control.NonFatal
 
-class ShellRetentionStrategyBase(@BeanProperty val command: String)
+class CommandRetentionStrategyBase(@BeanProperty val command: String)
     extends RetentionStrategy[SlaveComputer]
     with JavaLogging {
   def check(computer: SlaveComputer) =
@@ -42,8 +42,8 @@ class ShellRetentionStrategyBase(@BeanProperty val command: String)
   }
 }
 
-object ShellRetentionStrategyBase {
+object CommandRetentionStrategyBase {
   class Descriptor extends HudsonDescriptor[RetentionStrategy[_]] {
-    override def getDisplayName = "Shell"
+    override def getDisplayName = "Command"
   }
 }

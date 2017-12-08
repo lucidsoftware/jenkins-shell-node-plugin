@@ -1,6 +1,6 @@
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:f="/lib/form" xmlns:j="jelly:core">
-  <f:section title="${%Shell Cloud}">
+  <f:section title="${%Command Cloud}">
     <f:entry title="${%Name}" field="name">
       <f:textbox/>
     </f:entry>

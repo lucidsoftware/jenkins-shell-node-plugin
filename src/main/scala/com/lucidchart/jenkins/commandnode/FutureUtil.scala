@@ -1,4 +1,4 @@
-package com.lucidchart.jenkins.shellnode
+package com.lucidchart.jenkins.commandnode
 
 import java.util.concurrent.CompletableFuture
 import resource.Resource

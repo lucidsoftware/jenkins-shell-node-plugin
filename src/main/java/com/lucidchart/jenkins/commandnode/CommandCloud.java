@@ -1,11 +1,11 @@
-package com.lucidchart.jenkins.shellnode;
+package com.lucidchart.jenkins.commandnode;
 
 import hudson.Extension;
 import org.kohsuke.stapler.DataBoundConstructor;
 
-public class ShellCloud extends ShellCloudBase {
+public class CommandCloud extends ShellCloudBase {
     @DataBoundConstructor
-    public ShellCloud(String command, String name, String labelString) {
+    public CommandCloud(String command, String name, String labelString) {
         super(command, name, labelString);
     }
 

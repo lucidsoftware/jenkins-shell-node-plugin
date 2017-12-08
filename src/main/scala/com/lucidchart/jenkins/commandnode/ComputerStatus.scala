@@ -1,4 +1,4 @@
-package com.lucidchart.jenkins.shellnode
+package com.lucidchart.jenkins.commandnode
 
 import hudson.slaves.{OfflineCause, SlaveComputer}
 import jenkins.model.Jenkins

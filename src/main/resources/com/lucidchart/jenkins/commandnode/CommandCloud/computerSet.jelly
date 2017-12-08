@@ -6,7 +6,7 @@
         <td/>
         <td colspan="${monitors.size()+1}">
           <f:form action="${rootURL}/cloud/${it.name}/provision" method="post" name="provision-shell">
-            <input class="shell-provision-button" type="submit" value="${%Provision via shell cloud}" />
+            <input class="command-provision-button" type="submit" value="${%Provision via shell cloud}" />
             <select name="cloud">
               <j:forEach var="cloud" items="${it.clouds}">
                 <option value="${cloud.name}">${cloud.displayName}</option>
@@ -17,7 +17,7 @@
       </tr>
       <script>
         Behaviour.register({
-          '.shell-provision-button': function(e) {
+          '.command-provision-button': function(e) {
             new YAHOO.widget.Button(e, {type: 'menu', menu: e.nextSibling});
           }
         });
