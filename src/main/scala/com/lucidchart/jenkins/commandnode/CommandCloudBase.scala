@@ -20,7 +20,7 @@ case class ProvisionParams(label: Label, workload: Int)
 class ShellCloudBase(
   @BeanProperty val command: String,
   name: String,
-  @BeanProperty labelString: String
+  @BeanProperty val labelString: String
 ) extends Cloud(name)
     with JavaLogging {
 
@@ -101,6 +101,7 @@ class ShellCloudBase(
       .asJava
 
   private[this] def run(params: Option[ProvisionParams]) = ProcessUtil.runShellScript(command) { builder =>
+    builder.redirectError(ProcessBuilder.Redirect.INHERIT)
     builder.environment.put("JENKINS_URL", Jenkins.getInstance.getRootUrl)
     builder.environment.put("CLOUD_NAME", name)
     params.foreach {

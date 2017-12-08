@@ -31,6 +31,7 @@ class CommandRetentionStrategyBase(@BeanProperty val command: String)
     }
 
   private[this] def run(computer: SlaveComputer) = ProcessUtil.runShellScript(command) { builder =>
+    builder.redirectError(ProcessBuilder.Redirect.INHERIT)
     builder.environment.put("JENKINS_URL", Jenkins.getInstance.getRootUrl)
     builder.environment.put("NODE_IDLE", computer.isIdle.toString)
     builder.environment.put(
