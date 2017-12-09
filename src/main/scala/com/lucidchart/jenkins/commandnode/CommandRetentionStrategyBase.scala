@@ -21,7 +21,11 @@ class CommandRetentionStrategyBase(@BeanProperty val command: String)
       } yield new BufferedReader(new InputStreamReader(input))
       reader.acquireAndGet { reader =>
         val nextCheck = reader.readLine().toLong
-        Option(reader.readLine()).filter(_.nonEmpty).map(ComputerStatus.parse).foreach(ComputerStatus.set(computer, _))
+        Option(reader.readLine())
+          .filter(_.nonEmpty)
+          .map(ComputerStatus.parse)
+          .filter(_ != ComputerStatus.get(computer))
+          .foreach(ComputerStatus.set(computer, _))
         Duration.ofMillis(nextCheck).toMinutes
       }
     } catch {
