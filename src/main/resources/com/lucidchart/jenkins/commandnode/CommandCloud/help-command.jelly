@@ -8,7 +8,7 @@
         <li>NODE_LABEL &#8211; The label expression triggering the request, or empty if there is no specific label</li>
     </ul>
     <h4>Standard in</h4>
-    Each line is the
+    Each line is a planned node: name, tab, and capacity.
     <h4>Standard out</h4>
     If a node cannot be launched, standard out should be "-" (without the quotes).
     Otherwise,

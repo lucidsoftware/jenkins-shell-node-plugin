@@ -4,7 +4,7 @@ import hudson.model.labels.LabelAtom
 import hudson.model.{Label, Node, Descriptor => HudsonDescriptor}
 import hudson.slaves.Cloud
 import hudson.slaves.NodeProvisioner.PlannedNode
-import java.io.{BufferedReader, InputStreamReader}
+import java.io.{BufferedReader, InputStreamReader, PrintStream}
 import java.util.concurrent.CompletableFuture
 import jenkins.model.Jenkins
 import org.kohsuke.stapler.HttpResponses
@@ -16,7 +16,7 @@ import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, Promise}
 import scala.util.control.NonFatal
 
-case class ProvisionParams(label: Label, workload: Int)
+case class ProvisionParams(label: Option[Label], workload: Int)
 
 class ShellCloudBase(
   @BeanProperty val command: String,
@@ -45,13 +45,12 @@ class ShellCloudBase(
   def canProvision(label: Label) = label.matches(labels.asJavaCollection)
 
   def provision(label: Label, workload: Int) = {
-    println("provision(" + label.getName + ", " + workload + ")")
     @tailrec
     def next(nodes: List[PlannedNode], workload: Int): List[PlannedNode] =
       if (workload <= 0) {
         nodes
       } else {
-        planned(ProvisionParams(label, workload)) match {
+        planned(ProvisionParams(Option(label), workload)) match {
           case Some(node) => next(node :: nodes, workload - node.numExecutors)
           case None       => nodes
         }
@@ -68,23 +67,31 @@ class ShellCloudBase(
             process <- run(Some(params))
             input <- managed(process.getInputStream)
           } {
-            process.getOutputStream.close()
-            logger.info(s"Provisioning node for ${params.label}")
+            for {
+              output <- managed(process.getOutputStream)
+              output <- managed(new PrintStream(output))
+            } {
+              params.label
+                .fold(Jenkins.getInstance.unlabeledNodeProvisioner)(_.nodeProvisioner)
+                .getPendingLaunches
+                .forEach(node => output.print(s"${node.displayName}\t${node.numExecutors}"))
+            }
+            logger.info(s"Provisioning node for ${params.label.getOrElse("-")}")
             val reader = new BufferedReader(new InputStreamReader(input))
             val line = reader.readLine()
-            if (line == "0") {
+            if (line == "-") {
               promise.success(None)
             } else {
-              val (name, capacity) = line.split(" ") match {
+              val (name, capacity) = line.split("\t") match {
                 case Array(name, capacity) => name -> capacity.toInt
               }
               val future = new CompletableFuture[Node]
-              logger.info(s"Planned node $name for ${params.label}")
+              logger.info(s"Planned node $name for ${params.label.getOrElse("-")}")
               promise.success(Some(new PlannedNode(name, future, capacity) {
                 override def spent() = process.destroy()
               }))
               FutureUtil.completeWith(future)(CustomNodeBase.XStream.fromXML(reader).asInstanceOf[Node])
-              logger.info(s"Provisioned ${future.get.getNodeName} for ${params.label}")
+              logger.info(s"Provisioned ${future.get.getNodeName} for ${params.label.getOrElse("-")}")
             }
           }
         } catch {
@@ -108,7 +115,7 @@ class ShellCloudBase(
     params.foreach {
       case ProvisionParams(label, workload) =>
         builder.environment.put("NODE_CAPACITY", workload.toString)
-        builder.environment.put("NODE_LABEL", label.getName)
+        label.foreach(label => builder.environment.put("NODE_LABEL", label.getName))
     }
   }
 }
