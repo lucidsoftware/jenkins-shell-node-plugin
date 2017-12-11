@@ -1,0 +1,33 @@
+<div>
+    The shell script to run.
+    <h4>Environment variables</h4>
+    <ul>
+        <li>CLOUD_NAME &#8211; Name of the cloud</li>
+        <li>JENKINS_URL &#8211; Root URL of this Jenkins instance</li>
+        <li>NODE_CAPACITY &#8211; Requested number of executors, or empty if not applicable</li>
+        <li>NODE_LABEL &#8211; The label expression triggering the request, or empty if there is no specific label</li>
+    </ul>
+    <h4>Standard in</h4>
+    The names of planned nodes, separated by newlines.
+    <h4>Standard out</h4>
+    If a node cannot be launched, standard out should be "-" (without the quotes).
+    Otherwise,
+    <ol>
+        <li>The first line is the name of the node.</li>
+        <li>The second line is the capacity of the node.</li>
+        <li>The remainder is the XML representation of the node.</li>
+    </ol>
+    <hr/>
+    Example:
+    <pre>
+        #!/bin/bash
+        NAME="$CLOUD_NAME-$RANDOM"
+        echo "$NAME"
+        echo 2
+        echo "&lt;slave class="hudson.slaves.DumbSlave"&gt;
+            &lt;name&gt;$NAME&lt;/name&gt;
+            &lt;remoteFS&gt;/var/lib/jenkins&lt;remoteFS&gt;
+        &lt;/slave&gt;
+        "
+    </pre>
+</div>

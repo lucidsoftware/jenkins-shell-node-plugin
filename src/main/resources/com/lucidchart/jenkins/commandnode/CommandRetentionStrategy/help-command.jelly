@@ -1,5 +1,6 @@
 <div>
-    The shell script to run. It will have the following environment variables.
+    The shell script to run.
+    <h4>Environment variables</h4>
     <ul>
         <li>JENKINS_URL &#8211; Root URL of this Jenkins instance</li>
         <li>NODE_IDLE &#8211; "true" if the node is idle; "false" otherwise</li>
@@ -7,9 +8,12 @@
         <li>NODE_NAME &#8211; name of the node</li>
         <li>NODE_STATUS &#8211; current status of the node</li>
     </ul>
-    The first line of the script's output is the milliseconds until Jenkins should check again.
-    The second line, if present, is the status to change the node to.
-    <br/>
+    <h4>Standard output</h4>
+    <ol>
+        <li>The first line is the milliseconds until Jenkins should check again.</li>
+        <li>The second is the status to change the node to, or empty if the node should be left in the current state.</li>
+    </ol>
+    <hr/>
     Statuses are:
     <ul>
         <li>ENABLED &#8211; Online and accepting new jobs</li>
