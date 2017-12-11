@@ -7,6 +7,7 @@ import hudson.slaves.NodeProvisioner.PlannedNode
 import java.io.{BufferedReader, InputStreamReader, PrintStream}
 import java.util.concurrent.CompletableFuture
 import jenkins.model.Jenkins
+import org.apache.commons.io.IOUtils
 import org.kohsuke.stapler.HttpResponses
 import resource.managed
 import scala.annotation.tailrec
@@ -27,13 +28,21 @@ class ShellCloudBase(
 
   def doProvision() = {
     checkPermission(Cloud.PROVISION)
-    val nodeResource = for {
-      process <- run(None)
-      input <- managed(process.getInputStream)
-    } yield {
-      val reader = new BufferedReader(new InputStreamReader(input))
-      reader.readLine()
-      CustomNodeBase.XStream.fromXML(reader)
+    var error: String = null
+    val nodeResource = try {
+       for {
+        process <- run(None, ProcessBuilder.Redirect.PIPE)
+        input <- managed(process.getInputStream)
+      } yield {
+        process.getOutputStream.close()
+        val errorThread = new Thread(() => error = IOUtils.toString(process.getErrorStream))
+        errorThread.run()
+        val reader = new BufferedReader(new InputStreamReader(input))
+        reader.readLine()
+        CustomNodeBase.XStream.fromXML(reader)
+      }
+    } catch {
+      case NonFatal(e) if error != null => throw new RuntimeException(s"Failed to provision:\n$error", e)
     }
     val node = nodeResource.acquireAndGet(_.asInstanceOf[Node])
     Jenkins.getInstance.addNode(node)
@@ -108,9 +117,7 @@ class ShellCloudBase(
       .sortBy(_.name)
       .asJava
 
-  private[this] def run(params: Option[ProvisionParams]) = ProcessUtil.runShellScript(command) { builder =>
-    builder.redirectError(ProcessBuilder.Redirect.INHERIT)
-    builder.environment.put("JENKINS_URL", Jenkins.getInstance.getRootUrl)
+  private[this] def run(params: Option[ProvisionParams], error: ProcessBuilder.Redirect = ProcessBuilder.Redirect.INHERIT) = ProcessUtil.runShellScript(command) { builder =>    builder.environment.put("JENKINS_URL", Jenkins.getInstance.getRootUrl)
     builder.environment.put("CLOUD_NAME", getDisplayName)
     params.foreach {
       case ProvisionParams(label, workload) =>
