@@ -8,13 +8,12 @@
         <li>NODE_LABEL &#8211; The label expression triggering the request, or empty if there is no specific label</li>
     </ul>
     <h4>Standard in</h4>
-    The names of planned nodes, separated by newlines.
+    Each line is the
     <h4>Standard out</h4>
     If a node cannot be launched, standard out should be "-" (without the quotes).
     Otherwise,
     <ol>
-        <li>The first line is the name of the node.</li>
-        <li>The second line is the capacity of the node.</li>
+        <li>The first line is the name of the node and its capacity, separated by a tab.</li>
         <li>The remainder is the XML representation of the node.</li>
     </ol>
     <hr/>

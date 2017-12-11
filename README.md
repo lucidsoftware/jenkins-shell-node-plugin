@@ -16,3 +16,8 @@ Build the .hpi with `sbt hpi:packageBin`.
 To build and install the plugin to a Jenkins instance at http://localhost:8080/, `sbt hpi:install`.
 
 To build a minified version, replace `sbt` with `sbt -Dproguard=true`.
+
+## Features
+
+* Command Cloud - Launch new nodes
+* Command Retention Strategy - Change node status
