@@ -3,21 +3,31 @@
     <h4>Environment variables</h4>
     <ul>
         <li>JENKINS_URL &#8211; Root URL of this Jenkins instance</li>
+        <li>NODE_ACCEPTING &#8211; "true" if the node is accepting tasks; "false" otherwise</li>
+        <li>NODE_CONNECTED &#8211; "true" is the node is connected; "false" otherwise</li>
+        <li>NODE_CONNECTING &#8211; "true" if the node is currently connecting; "false" otherwise</li>
+        <li>NODE_DISABLED &#8211; "true" if the node has been set temporarily offline; "false" otherwise</li>
         <li>NODE_IDLE &#8211; "true" if the node is idle; "false" otherwise</li>
         <li>NODE_IDLE_START &#8211; Milliseconds since node became idle; negative for Jenkins estimate of when it will become idle</li>
         <li>NODE_NAME &#8211; name of the node</li>
-        <li>NODE_STATUS &#8211; current status of the node</li>
+        <li>NODE_START &#8211; current status of the node</li>
+        <li>NODE_OFFLINE_REASON &#8211; If the node is offline, the reason</li>
+        <li>NODE_OFFLINE_TIME &#8211; If the node is offline, milliseconds since epoch when node went offline</li>
     </ul>
     <h4>Standard output</h4>
     <ol>
         <li>The first line is the milliseconds until Jenkins should check again.</li>
-        <li>The second is the status to change the node to, or empty if the node should be left in the current state.</li>
+        <li>
+            The second following lines are the actions to take.
+            <ul>
+                <li>ACCEPT &#8221; Enable task acceptance</li>
+                <li>CONNECT &#8221; Connect (or re-connect) to the slave. Will end current connection.</li>
+                <li>DELETE &#8221; Delete the node.</li>
+                <li>DISCONNECT &#8221; Disconnect. Optionally, add a tab and text to specify a reason.</li>
+                <li>DISABLE &#8221; Set node temporarily offline. Optionally add a tab and text to specify a reason.</li>
+                <li>ENABLE &#8221; Remove temporarily offline.</li>
+                <li>REJECT &#8221; Prevent additional tasks from being accepted.</li>
+            </ul>
+        </li>
     </ol>
-    <hr/>
-    Statuses are:
-    <ul>
-        <li>ENABLED &#8211; Online and accepting new jobs</li>
-        <li>DISABLED &#8211; Online and not accepting new jobs</li>
-        <li>OFFLINE &#8211; Offline. Following "OFFLINE", there is a tab character and a reason.</li>
-    </ul>
 </div>
