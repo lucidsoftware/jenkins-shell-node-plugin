@@ -24,7 +24,7 @@ inConfig(Hpi)(
     packageOptions := {
       val attributes = Seq(
         "Jenkins-Version" -> jenkinsVersion.value,
-        "Long-Name" -> "Shell Cloud",
+        "Long-Name" -> "Command Node Plugin",
         "Short-Name" -> name.value,
         "Specification-Title" -> (description in Hpi).value,
         //"Plugin-Version" -> version.value
