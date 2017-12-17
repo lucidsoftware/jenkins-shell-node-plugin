@@ -1,21 +1,9 @@
 -allowaccessmodification
--dontoptimize # otherwise Jenkins has class loading error
 -keep public class com.lucidchart.jenkins.commandnode.** {
   public *;
 }
-#-keep public class * extends hudson.model.Descriptor {
-#    *;
-#}
--keepclassmembers class * {
-    ** MODULE$;
-}
-#-keepclasseswithmembers public class * {
-#    @org.kohsuke.stapler.DataBoundConstructor public *;
-#}
-#-keepclasseswithmembers public class * {
-#  public ** do*(...);
-#}
 -keep,allowoptimization,allowshrinking class * { *; }
 -keepattributes *
--optimizationpasses 2
+-optimizations !method/inlining/* # VerifyError: interface method reference is in an indirect superinterface
+-optimizationpasses 3
 -verbose
