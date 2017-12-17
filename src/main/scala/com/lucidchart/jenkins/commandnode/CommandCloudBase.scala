@@ -1,11 +1,11 @@
 package com.lucidchart.jenkins.commandnode
 
 import hudson.model.labels.LabelAtom
-import hudson.model.{Label, Node, Descriptor => HudsonDescriptor}
+import hudson.model.{Computer, Label, Node, Descriptor => HudsonDescriptor}
 import hudson.slaves.Cloud
 import hudson.slaves.NodeProvisioner.PlannedNode
 import java.io.{BufferedReader, InputStreamReader, PrintStream}
-import java.util.concurrent.CompletableFuture
+import java.util.concurrent.TimeUnit
 import jenkins.model.Jenkins
 import org.apache.commons.io.IOUtils
 import org.kohsuke.stapler.{HttpResponse, HttpResponses}
@@ -98,13 +98,23 @@ class ShellCloudBase(
               val (name, capacity) = line.split("\t") match {
                 case Array(name, capacity) => name -> capacity.toInt
               }
-              val future = new CompletableFuture[Node]
+              val future = Computer.threadPoolForRemoting.submit(() => {
+                val node = CustomNodeBase.XStream.fromXML(reader).asInstanceOf[Node]
+                try {
+                  // according to ec2-plugin a long connect time can result in Jenkins marking the node as offline and
+                  // overprovisioning
+                  node.toComputer.connect(false).get(5, TimeUnit.MINUTES)
+                } catch {
+                  case NonFatal(e) => logger.severe(s"Failed to connect to ${node.getNodeName}: $e")
+                }
+                logger.info(s"Provisioned ${node.getNodeName} for ${params.label.getOrElse("-")}")
+                node
+              })
               logger.info(s"Planned node $name for ${params.label.getOrElse("-")}")
               promise.success(Some(new PlannedNode(name, future, capacity) {
                 override def spent() = process.destroy()
               }))
-              FutureUtil.completeWith(future)(CustomNodeBase.XStream.fromXML(reader).asInstanceOf[Node])
-              logger.info(s"Provisioned ${future.get.getNodeName} for ${params.label.getOrElse("-")}")
+              future.get()
             }
           }
         } catch {
@@ -121,8 +131,12 @@ class ShellCloudBase(
       .sortBy(_.name)
       .asJava
 
-  private[this] def run(params: Option[ProvisionParams], error: ProcessBuilder.Redirect = ProcessBuilder.Redirect.INHERIT) = ProcessUtil.runShellScript(command) { builder =>    builder.environment.put("JENKINS_URL", Jenkins.getInstance.getRootUrl)
-    builder.environment.put("CLOUD_NAME", getDisplayName)
+  private[this] def run(
+    params: Option[ProvisionParams],
+    error: ProcessBuilder.Redirect = ProcessBuilder.Redirect.INHERIT
+  ) = ProcessUtil.runShellScript(command) { builder =>
+    builder.environment.put("JENKINS_URL", Jenkins.getInstance.getRootUrl)
+    builder.environment.put("CLOUD_NAME", name)
     params.foreach {
       case ProvisionParams(label, workload) =>
         builder.environment.put("NODE_CAPACITY", workload.toString)
