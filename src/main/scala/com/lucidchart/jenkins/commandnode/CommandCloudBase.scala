@@ -8,7 +8,7 @@ import java.io.{BufferedReader, InputStreamReader, PrintStream}
 import java.util.concurrent.CompletableFuture
 import jenkins.model.Jenkins
 import org.apache.commons.io.IOUtils
-import org.kohsuke.stapler.HttpResponses
+import org.kohsuke.stapler.{HttpResponse, HttpResponses}
 import resource.managed
 import scala.annotation.tailrec
 import scala.beans.BeanProperty
@@ -21,16 +21,20 @@ case class ProvisionParams(label: Option[Label], workload: Int)
 
 class ShellCloudBase(
   @BeanProperty val command: String,
-  name: String,
+  name_ : String,
   @BeanProperty val labelString: String
-) extends Cloud(name)
+) extends Cloud(name_)
     with JavaLogging {
 
-  def doProvision() = {
+  def doProvision(cloud: String): HttpResponse = {
+    // TODO: something better
+    if (name != cloud) {
+      return Jenkins.getInstance.clouds.asScala.find(_.name == cloud).get.asInstanceOf[ShellCloudBase].doProvision(name)
+    }
     checkPermission(Cloud.PROVISION)
     var error: String = null
     val nodeResource = try {
-       for {
+      for {
         process <- run(None, ProcessBuilder.Redirect.PIPE)
         input <- managed(process.getInputStream)
       } yield {
