@@ -96,7 +96,7 @@ libraryDependencies ++= Seq(
 
 logLevel in (Proguard, proguard) := Level.Debug
 
-if (sys.props.contains("proguard")) {
+if (sys.props.get("proguard").contains("true")) {
   mappings in (Hpi, packageBin) := (proguard in Proguard).value.map { file =>
     file -> s"WEB-INF/lib/${file.name}"
   }
