@@ -1,11 +1,11 @@
 # Jenkins Shell Cloud Plugin
 
-Plugin for shell-based nodes
+Executable hooks for node management
 
 ## Description
 
-Don't want to write a Jenkins plugin for provisioning slaves? Instead, call easily customizable scripts which do the
-heavy lifting.
+Do you have a need for custom cloud and node management, but don't want to write a full-on Jenkins Java plugin? The
+Command Node plugin delegates to external scripts and executables to do the heavy lifting.
 
 ## Build
 
@@ -19,5 +19,10 @@ To build a minified version, replace `sbt` with `sbt -Dproguard=true`.
 
 ## Features
 
-* Command Cloud - Launch new nodes
-* Command Retention Strategy - Change node status
+### Command Cloud
+
+Plan and add new nodes whenever Jenkins determines more are needed.
+
+### Command Retention Strategy
+
+Control a node's lifecycle based on its current state, how long it has been idle, etc.
