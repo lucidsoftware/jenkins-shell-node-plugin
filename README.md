@@ -26,3 +26,7 @@ Plan and add new nodes whenever Jenkins determines more are needed.
 ### Command Retention Strategy
 
 Control a node's lifecycle based on its current state, how long it has been idle, etc.
+
+### TODO: Command Launcher + Computer
+
+Connect to nodes, and react to events like agent termination.
