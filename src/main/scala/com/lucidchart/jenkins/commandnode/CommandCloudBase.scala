@@ -29,7 +29,14 @@ class ShellCloudBase(
   def doProvision(cloud: String): HttpResponse = {
     // TODO: something better
     if (name != cloud) {
-      return Jenkins.getInstance.clouds.asScala.find(_.name == cloud).get.asInstanceOf[ShellCloudBase].doProvision(cloud)
+      logger.info(
+        s"Cloud name: $name did not match the provided name: $cloud. Searching for clouds with the name: $cloud"
+      )
+      return Jenkins.getInstance.clouds.asScala
+        .find(_.name == cloud)
+        .get
+        .asInstanceOf[ShellCloudBase]
+        .doProvision(cloud)
     }
     checkPermission(Cloud.PROVISION)
     var error: String = null
