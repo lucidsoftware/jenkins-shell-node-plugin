@@ -1,1 +1,2 @@
 com.lucidchart.jenkins.commandnode.CommandCloud
+com.lucidchart.jenkins.commandnode.CommandRetentionStrategy
