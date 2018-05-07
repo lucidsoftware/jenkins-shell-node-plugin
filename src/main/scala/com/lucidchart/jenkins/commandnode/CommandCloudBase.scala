@@ -99,7 +99,9 @@ class ShellCloudBase(
             logger.info(s"Provisioning node for ${params.label.getOrElse("-")}")
             val reader = new BufferedReader(new InputStreamReader(input))
             val line = reader.readLine()
-            if (line == "-") {
+            if (line == null) {
+              throw new RuntimeException("Provision script stdout is empty.")
+            } else if (line == "-") {
               promise.success(None)
             } else {
               val (name, capacity) = line.split("\t") match {
