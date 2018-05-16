@@ -70,7 +70,7 @@ class ShellCloudBase(
       if (workload <= 0) {
         nodes
       } else {
-        planned(ProvisionParams(Option(label), workload)) match {
+        planned(ProvisionParams(Option(label), workload), nodes) match {
           case Some(node) => next(node :: nodes, workload - node.numExecutors)
           case None       => nodes
         }
@@ -78,7 +78,7 @@ class ShellCloudBase(
     asJavaCollection(next(Nil, workload))
   }
 
-  private[this] def planned(params: ProvisionParams) = {
+  private[this] def planned(params: ProvisionParams, nodesCurrentlyBeingPlanned: Seq[PlannedNode]) = {
     val promise = Promise[Option[PlannedNode]]()
     val thread = new Thread(
       () =>
@@ -94,7 +94,10 @@ class ShellCloudBase(
               params.label
                 .fold(Jenkins.getInstance.unlabeledNodeProvisioner)(_.nodeProvisioner)
                 .getPendingLaunches
-                .forEach(node => output.print(s"${node.displayName}\t${node.numExecutors}"))
+                .forEach(node => output.println(s"${node.displayName}\t${node.numExecutors}"))
+
+              nodesCurrentlyBeingPlanned
+                .foreach(node => output.println(s"${node.displayName}\t${node.numExecutors}"))
             }
             logger.info(s"Provisioning node for ${params.label.getOrElse("-")}")
             val reader = new BufferedReader(new InputStreamReader(input))
@@ -102,20 +105,15 @@ class ShellCloudBase(
             if (line == null) {
               throw new RuntimeException("Provision script stdout is empty.")
             } else if (line == "-") {
+              logger.info(s"Provision script exiting with - for ${params.label.getOrElse("-")}")
               promise.success(None)
             } else {
               val (name, capacity) = line.split("\t") match {
                 case Array(name, capacity) => name -> capacity.toInt
               }
+
               val future = Computer.threadPoolForRemoting.submit(() => {
                 val node = CustomNodeBase.XStream.fromXML(reader).asInstanceOf[Node]
-                try {
-                  // according to ec2-plugin a long connect time can result in Jenkins marking the node as offline and
-                  // overprovisioning
-                  node.toComputer.connect(false).get(5, TimeUnit.MINUTES)
-                } catch {
-                  case NonFatal(e) => logger.severe(s"Failed to connect to ${node.getNodeName}: $e")
-                }
                 logger.info(s"Provisioned ${node.getNodeName} for ${params.label.getOrElse("-")}")
                 node
               })
@@ -123,7 +121,6 @@ class ShellCloudBase(
               promise.success(Some(new PlannedNode(name, future, capacity) {
                 override def spent() = process.destroy()
               }))
-              future.get()
             }
           }
         } catch {

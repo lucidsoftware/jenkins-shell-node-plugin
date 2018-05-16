@@ -32,7 +32,7 @@ class CommandRetentionStrategyBase(@BeanProperty val command: String)
           line.split("\t", 2) match {
             case Array("ACCEPT")             => computer.setAcceptingTasks(true)
             case Array("CONNECT")            => computer.connect(true)
-            case Array("DELETE")             => Jenkins.getInstance.removeNode(computer.getNode)
+            case Array("DELETE")             => if (computer.getNode != null) { Jenkins.getInstance.removeNode(computer.getNode) }
             case Array("DISCONNECT")         => computer.disconnect()
             case Array("DISCONNECT", reason) => computer.disconnect(OfflineCause.create(new NonLocalizable(reason)))
             case Array("DISABLE")            => computer.setTemporarilyOffline(true)
