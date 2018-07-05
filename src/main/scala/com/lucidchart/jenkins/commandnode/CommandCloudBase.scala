@@ -16,6 +16,7 @@ import scala.collection.JavaConverters._
 import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, Promise}
 import scala.util.control.NonFatal
+import scala.util.Try
 
 case class ProvisionParams(label: Option[Label], workload: Int)
 
@@ -81,8 +82,10 @@ class ShellCloudBase(
   private[this] def planned(params: ProvisionParams, nodesCurrentlyBeingPlanned: Seq[PlannedNode]) = {
     val promise = Promise[Option[PlannedNode]]()
     val thread = new Thread(
-      () =>
-        try {
+      () => {
+        var error: String = null
+        Try {
+
           for {
             process <- run(Some(params))
             input <- managed(process.getInputStream)
@@ -99,13 +102,17 @@ class ShellCloudBase(
               nodesCurrentlyBeingPlanned
                 .foreach(node => output.println(s"${node.displayName}\t${node.numExecutors}"))
             }
-            logger.info(s"Provisioning node for ${params.label.getOrElse("-")}")
+            logger.info(s"Provisioning node for label: ${params.label.getOrElse("-")} workload: ${params.workload}")
+            val errorThread = new Thread(() => error = IOUtils.toString(process.getErrorStream))
+            errorThread.run()
             val reader = new BufferedReader(new InputStreamReader(input))
             val line = reader.readLine()
             if (line == null) {
               throw new RuntimeException("Provision script stdout is empty.")
             } else if (line == "-") {
-              logger.info(s"Provision script exiting with - for ${params.label.getOrElse("-")}")
+              logger.info(
+                s"Provision script exiting with - for label: ${params.label.getOrElse("-")} workload: ${params.workload}"
+              )
               promise.success(None)
             } else {
               val (name, capacity) = line.split("\t") match {
@@ -123,8 +130,20 @@ class ShellCloudBase(
               }))
             }
           }
-        } catch {
-          case NonFatal(e) => promise.tryFailure(e)
+        } recover {
+          case e => {
+            val provisionScriptErrorMessage = if (error != null) {
+              s" Provisioning script error: $error"
+            } else {
+              ""
+            }
+            logger.severe(
+              s"Error provisioning node for label: ${params.label.getOrElse("-")} workload: ${params.workload}\n" +
+                s" Exception: $e \n $provisionScriptErrorMessage"
+            )
+            promise.success(None)
+          }
+        }
       }
     )
     thread.run()
