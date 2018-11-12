@@ -5,7 +5,7 @@ import scala.concurrent.Promise
 
 object FutureUtil {
   implicit def promiseResource[A] = new Resource[Promise[A]] {
-    override def closeAfterException(promise: Promise[A], exception: Throwable) = promise.tryFailure(exception)
-    def close(promise: Promise[A]) = ()
+    override def closeAfterException(promise: Promise[A], exception: Throwable): Unit = promise.tryFailure(exception)
+    def close(promise: Promise[A]): Unit = ()
   }
 }

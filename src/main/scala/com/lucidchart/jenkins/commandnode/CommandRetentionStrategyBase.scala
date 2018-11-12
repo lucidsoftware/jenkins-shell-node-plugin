@@ -7,6 +7,7 @@ import java.time.{Duration, Instant}
 import jenkins.model.Jenkins
 import jenkins.util.NonLocalizable
 import resource.managed
+import resource.ManagedResource
 import scala.beans.BeanProperty
 import scala.util.control.NonFatal
 
@@ -15,11 +16,11 @@ sealed trait Computer
 class CommandRetentionStrategyBase(@BeanProperty val command: String)
     extends RetentionStrategy[SlaveComputer]
     with JavaLogging {
-  def check(computer: SlaveComputer) = apply(computer, false)
+  def check(computer: SlaveComputer): Long = apply(computer, false)
 
-  override def start(computer: SlaveComputer) = Queue.withLock(() => apply(computer, true))
+  override def start(computer: SlaveComputer): Unit = Queue.withLock(() => apply(computer, true))
 
-  private[this] def apply(computer: SlaveComputer, start: Boolean) =
+  private[this] def apply(computer: SlaveComputer, start: Boolean): Long =
     try {
       logger.info(s"Checking retention for ${computer.getName}")
       val reader = for {
@@ -55,25 +56,26 @@ class CommandRetentionStrategyBase(@BeanProperty val command: String)
         1
     }
 
-  private[this] def run(computer: SlaveComputer, start: Boolean) = ProcessUtil.runShellScript(command) { builder =>
-    builder.redirectError(ProcessBuilder.Redirect.INHERIT)
-    builder.environment.put("JENKINS_URL", Jenkins.getInstance.getRootUrl)
-    builder.environment.put("NODE_ACCEPTING", computer.isAcceptingTasks.toString)
-    builder.environment.put("NODE_CONNECTED", (computer.getChannel != null).toString)
-    builder.environment.put("NODE_CONNECTING", computer.isConnecting.toString)
-    builder.environment.put("NODE_DISABLED", computer.isTemporarilyOffline.toString)
-    builder.environment.put("NODE_IDLE", computer.isIdle.toString)
-    builder.environment.put(
-      "NODE_IDLE_DURATION",
-      Duration.between(Instant.ofEpochMilli(computer.getIdleStartMilliseconds), Instant.now).toMillis.toString
-    )
-    builder.environment.put("NODE_START", start.toString)
-    builder.environment.put("NODE_NAME", computer.getName)
-    Option(computer.getOfflineCause).foreach { cause =>
-      builder.environment.put("NODE_OFFLINE_TIME", cause.getTimestamp.toString)
-      builder.environment.put("NODE_OFFLINE_REASON", cause.toString)
+  private[this] def run(computer: SlaveComputer, start: Boolean): ManagedResource[Process] =
+    ProcessUtil.runShellScript(command) { builder =>
+      builder.redirectError(ProcessBuilder.Redirect.INHERIT)
+      builder.environment.put("JENKINS_URL", Jenkins.getInstance.getRootUrl)
+      builder.environment.put("NODE_ACCEPTING", computer.isAcceptingTasks.toString)
+      builder.environment.put("NODE_CONNECTED", (computer.getChannel != null).toString)
+      builder.environment.put("NODE_CONNECTING", computer.isConnecting.toString)
+      builder.environment.put("NODE_DISABLED", computer.isTemporarilyOffline.toString)
+      builder.environment.put("NODE_IDLE", computer.isIdle.toString)
+      builder.environment.put(
+        "NODE_IDLE_DURATION",
+        Duration.between(Instant.ofEpochMilli(computer.getIdleStartMilliseconds), Instant.now).toMillis.toString
+      )
+      builder.environment.put("NODE_START", start.toString)
+      builder.environment.put("NODE_NAME", computer.getName)
+      Option(computer.getOfflineCause).foreach { cause =>
+        builder.environment.put("NODE_OFFLINE_TIME", cause.getTimestamp.toString)
+        builder.environment.put("NODE_OFFLINE_REASON", cause.toString)
+      }
     }
-  }
 }
 
 object CommandRetentionStrategyBase {

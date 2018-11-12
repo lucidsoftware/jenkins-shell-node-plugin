@@ -2,11 +2,11 @@ package com.lucidchart.jenkins.commandnode
 
 import java.nio.file.Files
 import java.nio.file.attribute.{PosixFilePermission, PosixFilePermissions}
-import resource.makeManagedResource
+import resource.{makeManagedResource, DefaultManagedResource, ManagedResource}
 import scala.collection.JavaConverters._
 
 object ProcessUtil {
-  def checkSuccess(process: Process) =
+  def checkSuccess(process: Process): DefaultManagedResource[Unit] =
     makeManagedResource(())(
       _ =>
         process.waitFor() match {
@@ -15,13 +15,13 @@ object ProcessUtil {
       }
     )(Nil)
 
-  def run(builder: ProcessBuilder) =
+  def run(builder: ProcessBuilder): ManagedResource[Process] =
     makeManagedResource(builder.start()) { process =>
       process.destroyForcibly()
       process.waitFor()
     }(Nil)
 
-  def runShellScript(command: String)(f: ProcessBuilder => Unit) =
+  def runShellScript(command: String)(f: ProcessBuilder => Unit): ManagedResource[Process] =
     for {
       file <- FileUtil.managedFile(
         Files.createTempFile(

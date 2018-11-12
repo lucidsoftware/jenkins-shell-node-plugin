@@ -85,7 +85,7 @@ install in Hpi := {
 
 description in Hpi := "Custom node provisioning using system commands"
 
-jenkinsVersion := "2.107.2"
+jenkinsVersion := "2.138.3"
 
 libraryDependencies ++= Seq(
   "com.jsuereth" %% "scala-arm" % "2.0",
@@ -134,7 +134,7 @@ homepage := Some(url("https://github.com/lucidsoftware/jenkins-command-node-plug
 
 resolvers += "Jenkins public repository" at "https://repo.jenkins-ci.org/public/"
 
-scalaVersion := "2.12.6"
+scalaVersion := "2.12.7"
 
 scalafmtOnCompile := true
 
